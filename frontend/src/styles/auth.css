@@ -1,0 +1,327 @@
+/* =========================
+Global Styles
+========================= */
+
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* =========================
+Login Page
+========================= */
+
+.container {
+display: flex;
+height: 100vh;
+}
+
+.left {
+flex: 1;
+background: linear-gradient(180deg,#0b1f4d,#061a3b);
+color: white;
+display: flex;
+flex-direction: column;
+justify-content: center;
+padding: 80px;
+}
+
+.left h1 {
+font-size: 48px;
+font-weight: 700;
+color: #E6F0FF;
+margin-bottom: 10px;
+}
+
+.left h2 {
+font-size: 48px;
+font-weight: 700;
+color: #4C8DFF;
+margin-bottom: 20px;
+}
+
+.left p {
+font-size: 18px;
+opacity: .85;
+margin-top: 10px;
+}
+
+.logo {
+font-size: 40px;
+margin-bottom: 20px;
+}
+
+.features {
+display: flex;
+gap: 15px;
+margin-top: 25px;
+}
+
+.feature {
+background: rgba(255,255,255,0.08);
+padding: 12px 18px;
+border-radius: 10px;
+font-size: 14px;
+}
+
+.feature-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.05);
+  padding: 10px 16px;
+  border-radius: 12px;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.feature-badge .tick {
+  background: #22c55e;
+  color: white;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+
+
+/* =========================
+Right Panel
+========================= */
+
+.right {
+flex: 1;
+display: flex;
+justify-content: center;
+align-items: center;
+background: #f7f8fb;
+}
+
+.card {
+width: 420px;
+padding: 40px;
+background: white;
+border-radius: 12px;
+box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+text-align: center;
+}
+
+.card h2 {
+font-size: 22px;
+margin-bottom: 25px;
+}
+
+.google-btn {
+width: 100%;
+padding: 14px;
+background: white;
+border: 1px solid #ddd;
+border-radius: 8px;
+cursor: pointer;
+margin-top: 12px;
+font-weight: 600;
+}
+
+.google-btn:hover {
+background: #f5f5f5;
+}
+
+.signup-row {
+margin-top: 12px;
+font-size: 14px;
+}
+
+.signup-row a {
+color: #2563eb;
+font-weight: 600;
+}
+
+
+/* =========================
+Signup Page
+========================= */
+
+.signup-container {
+background: #f5f6fa;
+min-height: 100vh;
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 40px;
+}
+
+.signup-card {
+width: 650px;
+background: white;
+padding: 40px;
+border-radius: 12px;
+box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.signup-header {
+text-align: center;
+margin-bottom: 25px;
+}
+
+.signup-logo {
+height: 100px;
+}
+
+.company-logo {
+display: flex;
+justify-content: center;
+align-items: center;
+margin-bottom: 15px;
+}
+
+.signup-logo {
+height: 100px;
+}
+
+.section-title {
+color: #2563eb;
+font-size: 13px;
+margin-top: 25px;
+margin-bottom: 10px;
+font-weight: 600;
+letter-spacing: .5px;
+}
+
+
+/* =========================
+Form
+========================= */
+
+.form-row {
+display: flex;
+gap: 15px;
+}
+
+.form-group {
+display: flex;
+flex-direction: column;
+width: 100%;
+}
+
+.form-group label {
+font-size: 13px;
+font-weight: 600;
+margin-bottom: 6px;
+color: #1e293b;
+}
+
+input {
+padding: 10px 12px;
+border-radius: 8px;
+border: 1px solid #e2e8f0;
+font-size: 14px;
+margin-bottom: 12px;
+}
+
+
+/* =========================
+Radio Section
+========================= */
+
+.radio-row {
+display: flex;
+align-items: center;
+margin-top: 15px;
+}
+
+.radio-label {
+width: 150px;
+font-weight: 600;
+font-size: 14px;
+}
+
+.radio-options {
+display: flex;
+align-items: center;
+gap: 22px;
+}
+
+.radio-options label {
+display: flex;
+align-items: center;
+gap: 6px;
+font-size: 14px;
+cursor: pointer;
+}
+
+.radio-options input[type="radio"] {
+margin: 0;
+}
+
+/* =========================
+Promotion Badge
+========================= */
+
+.promotion-badge {
+background: #e5e7eb;
+padding: 6px 12px;
+border-radius: 6px;
+font-size: 12px;
+}
+
+
+/* =========================
+Terms
+========================= */
+
+.terms {
+margin-top: 20px;
+display: flex;
+align-items: center;
+}
+
+.terms label {
+display: flex;
+align-items: center;
+gap: 8px;
+font-size: 14px;
+cursor: pointer;
+}
+
+.terms input {
+margin: 0;
+}
+
+/* =========================
+Buttons
+========================= */
+
+.button-group {
+display: flex;
+justify-content: flex-end;
+gap: 15px;
+margin-top: 25px;
+}
+
+.cancel-btn {
+padding: 10px 20px;
+border-radius: 6px;
+border: 1px solid #ddd;
+background: white;
+cursor: pointer;
+}
+
+.register-btn {
+padding: 10px 20px;
+border-radius: 6px;
+border: none;
+background: #2563eb;
+color: white;
+cursor: pointer;
+}
+
+.register-btn:hover {
+background: #1d4ed8;
+}
