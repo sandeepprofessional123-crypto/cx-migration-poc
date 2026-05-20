@@ -1,1 +1,6 @@
-google-cloud-firestore
+fastapi
+uvicorn
+google-cloud-bigquery
+python-dotenv
+python3-saml
+python-multipart

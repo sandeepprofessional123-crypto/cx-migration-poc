@@ -5,180 +5,337 @@ import { signInWithCredential, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../firebase";
 import { msalInstance } from "../azureConfig";
 import oktaAuth from "../oktaConfig";
-import { useOktaAuth } from "@okta/okta-react";
-
-
+import { BACKEND_BASE_URL, clearSession, decodeJwtPayload, saveSession } from "../session";
 
 
 const Login = () => {
-	
-	
-	useEffect(() => {
 
-  msalInstance.initialize().then(async () => {
+  useEffect(() => {
 
-    const response = await msalInstance.handleRedirectPromise();
-	const urlParams = new URLSearchParams(window.location.search);
-	const samlResponse = document.querySelector("input[name='SAMLResponse']");
+    const init = async () => {
+      await msalInstance.initialize()
 
-    if (response) {
-      console.log("Azure Login Success", response);
-      alert("Azure Login Success");
+      const storedEmail = localStorage.getItem("userEmail")
+      const storedIdentityValue = localStorage.getItem("identityValue")
+      const storedLoginType = localStorage.getItem("loginType")
+      const autoLogin = localStorage.getItem("autoLogin")
+
+      // SAML callback takes priority over any previously cached session.
+      const params = new URLSearchParams(window.location.search)
+      const samlEmail = params.get("email")
+      const samlLoginType = params.get("loginType")
+      const samlIdentityValue = params.get("identityValue")
+
+      if (samlEmail && samlLoginType === "saml") {
+        await handleLogin({
+          email: samlEmail,
+          loginType: "saml",
+          identityValue: samlIdentityValue || samlEmail
+        })
+        return
+      }
+
+
+      if (autoLogin && storedEmail && storedLoginType) {
+
+        localStorage.removeItem("autoLogin")
+
+        await handleLogin({
+          email: storedEmail,
+          loginType: storedLoginType,
+          identityValue: storedIdentityValue || storedEmail
+        })
+        return
+
+      }
+
+      const response = await msalInstance.handleRedirectPromise()
+
+      // Azure Redirect
+      if (response) {
+
+        const userEmail = response.account.username
+        const identityValue =
+          response.account.idTokenClaims?.oid ||
+          response.account.idTokenClaims?.sub ||
+          response.account.localAccountId ||
+          userEmail
+
+        await handleLogin({
+          email: userEmail,
+          loginType: "azure",
+          identityValue
+        })
+
+        return
+
+      }
+
+      // Okta Redirect
+      try {
+
+        const res = await oktaAuth.handleLoginRedirect()
+
+        if (res && res.idToken) {
+
+          const userEmail = res.idToken.claims.email
+          const identityValue = res.idToken.claims.sub || userEmail
+
+          await handleLogin({
+            email: userEmail,
+            loginType: "okta",
+            identityValue
+          })
+
+          return
+        }
+
+      } catch (e) { }
+
+      // Azure fallback
+      const accounts = msalInstance.getAllAccounts()
+
+      if (accounts.length > 0 && localStorage.getItem("autoLogin")) {
+
+        const userEmail = accounts[0].username
+        const identityValue =
+          accounts[0].idTokenClaims?.oid ||
+          accounts[0].idTokenClaims?.sub ||
+          accounts[0].localAccountId ||
+          userEmail
+
+        await handleLogin({
+          email: userEmail,
+          loginType: "azure",
+          identityValue
+        })
+
+      }
     }
-	
-	// SAML Success Check
-if (
-window.location.href.includes("SAMLResponse") ||
-window.location.href.includes("RelayState")
-) {
-alert("SAML Login Successful");
-}
-  });
 
-}, []);
+    init()
 
-const azureLogin = async () => {
-  try {
+  }, [])
 
-    const accounts = msalInstance.getAllAccounts();
 
-    if (accounts.length > 0) {
-      alert("Already logged in with Azure");
-      console.log(accounts[0]);
-      return;
+  const azureLogin = async () => {
+
+    try {
+
+      await msalInstance.initialize()
+
+      await msalInstance.loginRedirect({
+        scopes: ["user.read"]
+      })
+
+    } catch (error) {
+      console.log(error)
     }
 
-    const loginResponse = await msalInstance.loginPopup({
-      scopes: ["user.read"],
-    });
-
-    console.log(loginResponse);
-
-    alert("Azure Login Success");
-
-  } catch (error) {
-    console.log(error);
   }
-};
 
-const loginOkta = async () => {
-await oktaAuth.signInWithRedirect();
-};
+  const loginOkta = async () => {
+    localStorage.setItem("loginType", "okta");
+    await oktaAuth.signInWithRedirect();
+  };
 
-const samlLogin = () => {
-  window.location.href =
-    "https://trial-2408192.okta.com/app/trial-2408192_cxmigrationsaml_1/exk11w1us5uRRPPi8698/sso/saml";
-};
+  const samlLogin = () => {
+
+    window.location.href =
+      "https://trial-2408192.okta.com/app/trial-2408192_cxmigrationsaml_1/exk11w1us5uRRPPi8698/sso/saml"
+  }
+
+  const linkLoginType = async ({ userId, loginType, identityValue }) => {
+
+    const response = await fetch(
+      `${BACKEND_BASE_URL}/user/link-login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userId,
+          loginType,
+          identityValue,
+          actor: "frontend-login"
+        })
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error("Failed to link login type")
+    }
+
+    return response.json()
+  }
 
 
+  const handleLogin = async ({ email, loginType, identityValue }) => {
+    saveSession({ email, loginType, identityValue })
+    localStorage.setItem("autoLogin", "true")
 
-return (
+    const response = await fetch(
+      `${BACKEND_BASE_URL}/auth/resolve-user`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email,
+          loginType,
+          identityValue,
+          actor: "frontend-login"
+        })
+      }
+    )
 
-<div className="container">
+    const data = await response.json()
 
-<div className="left">
+    if (data.registered) {
 
-<div className="logo">
-🤖
-</div>
+      if (data.user?.isDeleted) {
+        alert("This user is de-registered. Please contact support.")
+        clearSession()
+        return
+      }
 
-<h1>
-Next-Generation  
-</h1>
-<h2>CX Migration Engine</h2>
+      saveSession({ userId: data.userId, email, loginType, identityValue })
 
-<p>
-Seamlessly transform legacy Dialogflow state-machines
-into dynamic Gemini agents using AI-powered automation.
-</p>
+      const loginTypes = data.user?.loginTypes || []
+      if (!loginTypes.includes(loginType)) {
+        await linkLoginType({ userId: data.userId, loginType, identityValue })
+      }
 
-<div className="features">
+      window.location.href = "/dashboard"
 
-<div className="feature-badge">
-  <span className="tick">✓</span>
-  Automated Discovery
-</div>
+    } else {
 
-<div className="feature-badge">
-  <span className="tick">✓</span>
-  SSOT Generation
-</div>
+      window.location.href =
+        `/signup?email=${encodeURIComponent(email || "")}&loginType=${loginType}&identityValue=${encodeURIComponent(identityValue || "")}`
+    }
+  }
 
-<div className="feature-badge">
-  <span className="tick">✓</span>
-  Agentic Deployment
-</div>
 
-</div>
+  return (
 
-</div>
+    <div className="container">
 
-<div className="right">
+      <div className="left">
 
-<div className="card">
+        <div className="logo">
+          🤖
+        </div>
 
-<div className="company-logo">
-<img class="signup-logo" src="/teksystems-logo.jpg" alt="TEKsystems" />
+        <h1>
+          Next-Generation
+        </h1>
+        <h2>CX Migration Engine</h2>
 
-</div>
+        <p>
+          Seamlessly transform legacy Dialogflow state-machines
+          into dynamic Gemini agents using AI-powered automation.
+        </p>
 
-<h2>
-Gemini Enterprise for Customer Experience
-</h2>
-<p className="sub-title">
-Migration Assistance Engine
-</p>
+        <div className="features">
 
-<div className="google-btn">
-<GoogleLogin
-onSuccess={(credentialResponse)=>{
+          <div className="feature-badge">
+            <span className="tick">✓</span>
+            Automated Discovery
+          </div>
 
-const credential =
-GoogleAuthProvider.credential(
-credentialResponse.credential
-);
+          <div className="feature-badge">
+            <span className="tick">✓</span>
+            SSOT Generation
+          </div>
 
-signInWithCredential(auth,credential)
-.then((result)=>{
+          <div className="feature-badge">
+            <span className="tick">✓</span>
+            Agentic Deployment
+          </div>
 
-console.log(result)
-alert("Firebase Login Success")
+        </div>
 
-})
+      </div>
 
-}}
+      <div className="right">
 
-onError={()=>{
+        <div className="card">
 
-alert("Login Failed")
+          <div className="company-logo">
+            <img className="signup-logo" src="/teksystems-logo.jpg" alt="TEKsystems" />
 
-}}
-/>
-</div>
+          </div>
 
-<button className="google-btn" onClick={azureLogin}>
-  Sign in with Azure
-</button>
+          <h2>
+            Gemini Enterprise for Customer Experience
+          </h2>
+          <p className="sub-title">
+            Migration Assistance Engine
+          </p>
 
-<button onClick={loginOkta} className="google-btn">
-Sign in with Okta
-</button>
+          <div className="google-btn">
+            <GoogleLogin
+              onSuccess={(credentialResponse) => {
 
-<button className="google-btn" onClick={samlLogin}>
-  Sign in with SAML
-</button>
+                const credential =
+                  GoogleAuthProvider.credential(
+                    credentialResponse.credential
+                  );
 
-<div className="signup-row">
-<span>New to the platform?</span>
-<a href="/signup">Create an Account</a>
-</div>
-</div>
+                signInWithCredential(auth, credential)
+                  .then((result) => {
 
-</div>
+                    console.log(result)
 
-</div>
+                    const userEmail = result.user.email
+                    const claims = decodeJwtPayload(credentialResponse.credential)
+                    const identityValue = claims.sub || userEmail
 
-);
+                    alert("Firebase Login Success")
+
+                    handleLogin({
+                      email: userEmail,
+                      loginType: "google",
+                      identityValue
+                    })
+
+                  })
+
+              }}
+
+              onError={() => {
+
+                alert("Login Failed")
+
+              }}
+            />
+          </div>
+
+          <button className="google-btn" onClick={azureLogin}>
+            Sign in with Azure
+          </button>
+
+          <button onClick={loginOkta} className="google-btn">
+            Sign in with Okta
+          </button>
+
+          <button className="google-btn" onClick={samlLogin}>
+            Sign in with SAML
+          </button>
+
+          <div className="signup-row">
+            <span>New to the platform?</span>
+            <a href="/signup">Create an Account</a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  );
 
 };
 

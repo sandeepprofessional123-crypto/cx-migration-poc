@@ -1,0 +1,22 @@
+{
+  "strict": true,
+  "debug": true,
+
+  "sp": {
+    "entityId": "https://backend-67986467720.us-central1.run.app/metadata",
+    "assertionConsumerService": {
+      "url": "https://backend-67986467720.us-central1.run.app/saml/callback",
+      "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+    }
+  },
+
+  "idp": {
+    "entityId": "http://www.okta.com/exk11w1us5uRRPPi8698",
+    "singleSignOnService": {
+      "url": "https://trial-2408192.okta.com/app/trial-2408192_cxmigrationsaml_1/exk11w1us5uRRPPi8698/sso/saml",
+      "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+    },
+
+    "x509cert": "MIIDqjCCApKgAwIBAgIGAZ2FaN9ZMA0GCSqGSIb3DQEBCwUAMIGVMQswCQYDVQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzENMAsGA1UECgwET2t0YTEUMBIGA1UECwwLU1NPUHJvdmlkZXIxFjAUBgNVBAMMDXRyaWFsLTI0MDgxOTIxHDAaBgkqhkiG9w0BCQEWDWluZm9Ab2t0YS5jb20wHhcNMjYwNDEzMDU1NDM1WhcNMzYwNDEzMDU1NTM1WjCBlTELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAoMBE9rdGExFDASBgNVBAsMC1NTT1Byb3ZpZGVyMRYwFAYDVQQDDA10cmlhbC0yNDA4MTkyMRwwGgYJKoZIhvcNAQkBFg1pbmZvQG9rdGEuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArxoaS2aPPgTvZMwN0eTkpWCBtM6OiHwjnXx9AJG/RSFeggIAp5b+ZnyyhlZZgPC86gXlqfvbp8pJqPb4k3w7GcDEmfDPSr5nwstzg2opWBNWWsbxxZ0QjvgpTP5vs7FJ+fYbNCYuZUmAgv/FT8YlAOaEKIXMVGUz08BGG2l9BWMK4NduY3p+Y6cyh2IP9PVpYOfyaqMoDuAIr2geHN6fpbyY4XXgYQAb1cm1y0iwfSezvmhtkJRuao/qyjmpoEsauKmOFNPTi74J0xeHTquy14u2m24teze84tPFEsRiqlN+ndnQl+KxuV0lWqd42WD/eeruJFA1Cp+zFpNv5QgXHwIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQAOAkbNtI39NUNBk2wy5fLGpYNv1vsBdg3rxI6yFLc8fRrgozfu8Rausr+vFw9JeNXVZc+KhJZgx4oV3qk6wdAHZ7M/Y1SzOygnXVIZ9MWCIkjcXWymcBtbzxv2jJf+78CDF7UQuxVqWwVdv/If+VFlIDKCrH+eFVGZuomowXBNwh1QRE8GagUn1Htf9G7y0iWBn9PJD3tnXUe7h8p9XQbIJJc9894suY7XMJSpFBG3xDnIKuGrc0B549t2rJ1Go26XPgKpNXzdAzHOdJ66pJgYMLRgTAscdOEwOpzzOOsYsZULFV6cbwWGnHQSAEOMQqP8e7GI7AY5EQ+XSyGojMsP"
+  }
+}
